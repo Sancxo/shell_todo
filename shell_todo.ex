@@ -71,7 +71,7 @@ Show tasks    Add a task    Delete a task    Load a .csv    Save a .csv    Quit
         todo = IO.gets("Which task do you want to delete ?\n") |> String.trim
         if Map.has_key?(data, todo) do
             IO.puts("Ok !")
-            new_map = Maps.drop(data, [todo])
+            new_map = Map.drop(data, [todo])
             IO.puts(~s("#{todo}" has succefully been deleted.))
             get_command(new_map)
         else 
