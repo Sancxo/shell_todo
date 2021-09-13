@@ -1,9 +1,26 @@
 defmodule ShellTodo do
     def start() do
-        filename = IO.gets("Name of the file.csv to load: ") |> String.trim()
-        read(filename)
-        |> parse()
-        |> get_command()
+       load_csv()
+    end
+
+    def add_task(data) do
+        get_name(data)
+
+        # get_command(new_data)
+    end
+
+    def delete_task(data) do
+        todo = IO.gets("Which task do you want to delete ?\n") |> String.trim
+        if Map.has_key?(data, todo) do
+            IO.puts("Ok !")
+            new_map = Map.drop(data, [todo])
+            IO.puts(~s("#{todo}" has succefully been deleted.))
+            get_command(new_map)
+        else 
+            IO.puts(~s(There is no todo named "#{todo}" ...))
+            show_tasks(data, false)
+            delete_task(data)
+        end
     end
 
     def get_command(data) do
@@ -19,24 +36,31 @@ Show tasks    Add a task    Delete a task    Load a .csv    Save a .csv    Quit
 
         case command do
             "s" -> show_tasks(data)
-            # "a" ->
+            "a" -> add_task(data)
             "d" -> delete_task(data)
-            # "l" ->
+            "l" -> load_csv()
             # "s" -> 
             "q" -> "Goodbye mate !"
             _   -> get_command(data)
         end
     end
 
-    def read(filename) do
-        case File.read(filename) do
-            {:ok, body} ->
-                body
-            {:error, error} ->  
-                IO.puts(~s(Could not open file "#{filename}" because of error : ))
-                IO.puts(~s[#{:file.format_error(error)}.])
-                start()
+    def get_name(data) do
+        name = IO.gets("Enter the name of the new task : ") |> String.trim
+
+        if Map.has_key?(data, name) do
+            IO.puts("This task already exists ! \n")
+            get_name(data)
+        else
+            name
         end
+    end
+
+    def load_csv() do
+        filename = IO.gets("Name of the file.csv to load: ") |> String.trim()
+        read(filename)
+            |> parse()
+            |> get_command()
     end
 
     def parse(body) do
@@ -57,6 +81,17 @@ Show tasks    Add a task    Delete a task    Load a .csv    Save a .csv    Quit
         end)
     end
 
+    def read(filename) do
+        case File.read(filename) do
+            {:ok, body} ->
+                body
+            {:error, error} ->  
+                IO.puts(~s(Could not open file "#{filename}" because of error : ))
+                IO.puts(~s[#{:file.format_error(error)}.])
+                start()
+        end
+    end
+
     def show_tasks(data, next_command? \\ true) do
         items = Map.keys(data)
         IO.puts("You have the following tasks to do :\n")
@@ -64,20 +99,6 @@ Show tasks    Add a task    Delete a task    Load a .csv    Save a .csv    Quit
         IO.puts("\n")
         if next_command? do
             get_command(data)
-        end
-    end
-
-    def delete_task(data) do
-        todo = IO.gets("Which task do you want to delete ?\n") |> String.trim
-        if Map.has_key?(data, todo) do
-            IO.puts("Ok !")
-            new_map = Map.drop(data, [todo])
-            IO.puts(~s("#{todo}" has succefully been deleted.))
-            get_command(new_map)
-        else 
-            IO.puts(~s(There is no todo named "#{todo}" ...))
-            show_tasks(data, false)
-            delete_task(data)
         end
     end
 end
